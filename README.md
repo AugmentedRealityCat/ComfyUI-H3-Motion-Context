@@ -162,6 +162,23 @@ has to match between clips, since a latent can't be resized; if it doesn't
 the node refuses and names both resolutions rather than quietly dropping
 to the lossy path.
 
+#### Portable latents
+
+The latent file can also travel through ComfyUI's HTTP API, for tools
+that drive ComfyUI remotely and keep their own copy of every clip.
+
+- **Save** reports its file in the run's history the same way stock Save
+  Latent does (`outputs.<node>.latents`: `filename`, `subfolder`,
+  `type: "output"`), so a client can fetch it with `GET /view`.
+- **Load** has an optional `folder` widget, `output` (the default, the
+  chain behaviour above) or `input`. With `input`, `latent_path` names one
+  file in ComfyUI's input folder, for example one sent with
+  `POST /upload/image`. Index 0 still loads nothing; above 0 that file is
+  loaded. Paths that leave the input folder are refused.
+
+Workflows saved before `folder` existed load unchanged and keep reading
+from output.
+
 There's an older path for graphs with no latent: the previous clip's
 frames into `context_frames`, its decoded audio into `context_audio`, and
 the H3 audio VAE into `audio_vae`. It works, but it costs a lossy round

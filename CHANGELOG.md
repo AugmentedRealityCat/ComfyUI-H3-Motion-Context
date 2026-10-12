@@ -8,6 +8,23 @@ rejected any keyframe anchor other than the first or last frame. That
 landed in ComfyUI 0.34.0. Every release through 0.33.4 has the older
 layout. Each entry below says which of the two it works with.
 
+## Unreleased
+
+Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
+
+- Save Latent reports its file as `ui.latents` (`filename`, `subfolder`,
+  `type: "output"`), the same shape as stock Save Latent, so the file shows
+  in `/history` and can be fetched through `/view`. Its output is
+  unchanged.
+- Load Latent gains an optional `folder` widget, `output` (default) or
+  `input`. `input` loads one named file from ComfyUI's input folder, e.g.
+  uploaded with `POST /upload/image`. Same containment rule as output; index
+  0 still loads nothing. The widget is last, so saved workflows load
+  unchanged.
+- Smoke test: the `IS_CHANGED` check compares resolved, case-normalised
+  paths, so it passes when `%TEMP%` differs from its realpath (casing,
+  short names, junctions) on Windows.
+
 ## 0.6.2 - 2026-09-06
 
 Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
