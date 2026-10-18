@@ -96,27 +96,6 @@ Weights are per latent step, taken from each step's own first frame, so
 `blend_frames` does not have to land on a step boundary. Note that 44
 frames is not a whole number of steps: the step-aligned lengths near it
 are 39 and 43.
-
-AUTO RAMP
-
-How long the ramp needs to be depends on how far the refine moved this
-clip. On a still shot the refined frames sit almost on top of the
-originals and a short ramp is invisible; on a moving or busy shot the
-refine redraws more and a short ramp shows as a slide. With tuning on
-auto (the default), the node measures that directly, in the frames
-after the hold:
-
-    how far the refined latent sits from the original, as a share of how
-    much the original varies across the frame.
-
-The gap picks the ramp from AUTO_RAMPS, and the ramp is shortened if it
-would leave nothing taken from the refine at full strength. The log
-names the gap and the ramp chosen on every clip. The gap bands are a
-first guess, not yet calibrated on real renders: the logged gaps from a
-still chain and a moving one are what will settle them.
-
-On manual, blend_frames is used as set, exactly as before. On auto it
-is ignored. The first clip has no ramp either way.
 """
 
 import logging
@@ -124,11 +103,6 @@ import logging
 _LOG = logging.getLogger("h3_motion_context")
 
 FRAME_PER_TOKEN = (1, 4, 4, 4, 4)
-
-# Auto ramp: (largest gap, ramp frames), smallest first; the last band
-# takes everything above. First guesses, to be calibrated from the
-# logged gaps of real still and moving chains.
-AUTO_RAMPS = ((0.10, 13), (0.25, 22), (None, 39))
 
 
 def nearest_valid(frames, span=3):
@@ -247,38 +221,6 @@ def weights(total_steps, hold_frames, blend_frames):
     return out
 
 
-def refine_gap(o_vid, r_vid, start):
-    """How far the refine moved this clip, in the steps from `start` on.
-
-    The difference between refined and original as a share of how much
-    the original varies across the frame, averaged over the batch and
-    every step. None when there are no steps to measure.
-    """
-    o = o_vid[:, :, int(start):]
-    r = r_vid[:, :, int(start):].to(device=o.device, dtype=o.dtype)
-    if int(o.shape[2]) == 0:
-        return None
-    diff = r - o
-    centred = o - o.mean(dim=(-2, -1), keepdim=True)
-    num = float((diff * diff).mean().sqrt())
-    den = float((centred * centred).mean().sqrt())
-    return num / max(den, 1e-9)
-
-
-def auto_ramp(gap, total_steps, hold_frames):
-    """The ramp for this gap, shortened until some of the clip is neat."""
-    want = AUTO_RAMPS[-1][1]
-    for limit, frames in AUTO_RAMPS:
-        if limit is None or (gap is not None and gap <= limit):
-            want = frames
-            break
-    options = sorted({f for _, f in AUTO_RAMPS if f <= want}, reverse=True)
-    for frames in options:
-        if any(w >= 1.0 for w in weights(total_steps, hold_frames, frames)):
-            return want, frames
-    return want, options[-1]
-
-
 class MiniMaxH3RefineBlend:
     """Hold the pinned frames, ramp into a refined version of the clip."""
 
@@ -299,9 +241,9 @@ class MiniMaxH3RefineBlend:
                                "56)."}),
                 "blend_frames": ("INT", {
                     "default": 22, "min": 0, "max": 512, "step": 1,
-                    "tooltip": "Manual tuning only. Frames to ramp from "
-                               "held to refined after the hold. 0 is a hard "
-                               "cut, which will show as a pop."}),
+                    "tooltip": "Frames to ramp from held to refined after "
+                               "the hold. 0 is a hard cut, which will show "
+                               "as a pop."}),
                 "audio": (("original", "refined"), {
                     "default": "original",
                     "tooltip": "Leave on original. The audio pin returns at "
@@ -324,11 +266,6 @@ class MiniMaxH3RefineBlend:
                                "sits in their canvas group. 0 is the first "
                                "clip: nothing pinned, so the whole thing "
                                "gets refined and the hold is skipped."}),
-                "tuning": (("auto", "manual"), {
-                    "default": "auto",
-                    "tooltip": "Auto measures how far the refine moved this "
-                               "clip and picks the ramp length itself. "
-                               "Manual uses blend_frames as set."}),
             },
             "optional": {
                 "refined": ("LATENT", {
@@ -366,7 +303,7 @@ class MiniMaxH3RefineBlend:
                    "after them. Audio passes through unrefined by default.")
 
     def apply(self, original, hold_frames, blend_frames, audio,
-              use_refine, clip_index=1, tuning="auto", refined=None):
+              use_refine, clip_index=1, refined=None):
         # This is a widget rather than an input because the Chain node
         # drives Load and Save the same way: the frontend finds them by
         # type inside the shared canvas group and writes their
@@ -377,10 +314,6 @@ class MiniMaxH3RefineBlend:
         # when it is connected to something that returned nothing, so
         # clip 0 and an unwired graph cannot be told apart.
         first_clip = int(clip_index) <= 0
-        if tuning not in ("auto", "manual"):
-            raise ValueError(
-                "h3_motion_context: refine blend: tuning is %r, expected "
-                "auto or manual" % (tuning,))
         if not use_refine:
             refined = None
         if refined is None:
@@ -412,15 +345,6 @@ class MiniMaxH3RefineBlend:
                 "but this clip only has %d" % (hold, hold_steps, total))
 
         blend = int(blend_frames)
-        if tuning == "auto" and not first_clip:
-            gap = refine_gap(o_vid, r_vid, hold_steps)
-            want, blend = auto_ramp(gap, total, hold)
-            _LOG.info("h3_motion_context: refine blend: auto, refine moved "
-                      "the clip %.3f after the hold, ramp %d frames%s",
-                      gap if gap is not None else float("nan"), blend,
-                      "" if blend == want else
-                      " (shortened from %d to leave some of the clip neat)"
-                      % want)
 
         if first_clip:
             w = [1.0] * total

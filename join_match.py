@@ -61,9 +61,12 @@ so nobody has to know which kind of shot they made:
     camera or a busy scene changes a lot.
 
 At or under STILL_MAX it is read as locked-off, above it as moving. The
-log names the reading and the number on every clip. STILL_MAX is a
-first guess, not yet calibrated on real renders: the logged numbers from
-a known locked-off chain and a known moving one are what will settle it.
+log names the reading and the number on every clip. STILL_MAX was set
+from three five-clip test chains of the same subject: a locked-off shot
+of someone playing guitar read 0.37 to 0.40, a tracking shot walking
+toward the camera 0.58 to 0.63, and a slow orbit around the seated
+player 0.82 to 0.87. A person moving on a still camera stays well under
+it; any camera move tested so far lands well over it.
 
 On manual, the three min_excess widgets are used as set, exactly as
 before. On auto they are ignored. The match_spread and match_detail
@@ -102,9 +105,9 @@ FRAME_PER_TOKEN = (1, 4, 4, 4, 4)
 GAIN_MIN, GAIN_MAX = 0.9, 1.1   # spread is never scaled more than 10%
 DETAIL_MIN, DETAIL_MAX = 0.9, 1.1   # nor is fine detail
 
-# Auto tuning. STILL_MAX is a first guess, to be calibrated from the
-# logged motion numbers of real locked-off and moving chains.
-STILL_MAX = 0.35
+# Auto tuning. STILL_MAX sits in the gap between locked-off (0.37 to
+# 0.40) and every camera move tested (0.58 and up). See AUTO TUNING above.
+STILL_MAX = 0.48
 AUTO_STILL = {"min_excess": 1.5, "min_excess_spread": 1.0,
               "min_excess_detail": 1.0}
 AUTO_MOVING = {"min_excess": 1.5, "min_excess_spread": 1.5,

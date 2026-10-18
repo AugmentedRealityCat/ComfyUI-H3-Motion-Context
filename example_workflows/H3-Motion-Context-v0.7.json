@@ -1,7 +1,7 @@
 {
   "id": "0552b9b8-2a5c-463d-b331-4526423c4d2b",
   "revision": 0,
-  "last_node_id": 548,
+  "last_node_id": 549,
   "last_link_id": 1092,
   "nodes": [
     {
@@ -306,12 +306,12 @@
       },
       "widgets_values": [
         "h3_context",
-        0,
+        4,
         false
       ],
       "widgets_values_named": {
         "latent_path": "h3_context",
-        "clip_index": 0,
+        "clip_index": 4,
         "stock_format": false
       },
       "color": "#1f1f48",
@@ -350,11 +350,11 @@
       },
       "widgets_values": [
         "h3_context/clip",
-        1
+        5
       ],
       "widgets_values_named": {
         "filename_prefix": "h3_context/clip",
-        "clip_index": 1
+        "clip_index": 5
       },
       "color": "#1f1f48",
       "bgcolor": "rgba(24,24,27,.9)"
@@ -398,7 +398,7 @@
       ],
       "size": [
         260,
-        200
+        180
       ],
       "flags": {},
       "order": 22,
@@ -441,16 +441,14 @@
         22,
         "original",
         true,
-        0,
-        "auto"
+        4
       ],
       "widgets_values_named": {
         "hold_frames": 22,
         "blend_frames": 22,
         "audio": "original",
         "use_refine": true,
-        "clip_index": 0,
-        "tuning": "auto"
+        "clip_index": 4
       },
       "color": "#1f1f48",
       "bgcolor": "rgba(24,24,27,.9)"
@@ -634,7 +632,7 @@
         "cnr_id": "crt-nodes",
         "ver": "d1bbdcb1d49cc5bdc0c43db75ba44d649f10b611",
         "Node name for S&R": "FancyTimerNode",
-        "elapsed_time_str": "03:52:787"
+        "elapsed_time_str": "03:59:641"
       },
       "widgets_values": [
         ""
@@ -912,12 +910,12 @@
         "Node name for S&R": "ResolutionSelectorLive"
       },
       "widgets_values": [
-        "3:4 (Portrait Standard)",
+        "4:3 (Standard)",
         0.75,
         32
       ],
       "widgets_values_named": {
-        "aspect_ratio": "3:4 (Portrait Standard)",
+        "aspect_ratio": "4:3 (Standard)",
         "megapixels": 0.75,
         "multiple": 32
       },
@@ -954,10 +952,10 @@
         "Node name for S&R": "PrimitiveStringMultiline"
       },
       "widgets_values": [
-        "subject_definitions:\n<Subject 1>: An adult woman in her late twenties with shoulder-length wavy chestnut brown hair, wearing a fitted mustard knit sweater #D9A441, straight-leg dark blue jeans #3E5C8A and white canvas sneakers. The character sheet supplies her face, hair, build and clothing.\n\nsummary:\n[reference generation] A single continuous tracking shot following <Subject 1> from the front as she walks at a steady pace along a long, straight city sidewalk lined with red brick buildings on a bright overcast day.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - her face, chestnut brown hair, build and clothing are kept from the character sheet, and she takes the soft overcast daylight of this scene rather than the lighting of the reference.\n\ndetailed_description:\nThe video is a photorealistic live-action recording from a handheld gimbal camera. Soft, even overcast daylight falls on the woman and the street from above, with gentle shadows that keep their detail and a pale grey sky whose highlights never clip. Contrast is moderate and steady, exposure is balanced, and color saturation is natural and constant throughout. The buildings are red brick #8C4A32 with cream window frames, her sweater is mustard #D9A441 and her jeans are dark blue #3E5C8A, and all three colors keep the same strength and saturation for the whole video. Fine detail is natural, even and steady across her skin, hair, sweater knit and the brick.\n[Shot 1] Tracking Shot at slow speed. The camera moves backward ahead of <Subject 1>, keeping her centered in the frame from the top of her head to her knees as she is already walking toward it along a wide grey concrete sidewalk. She walks at a relaxed, even pace, her arms swinging lightly at her sides, her eyes looking ahead past the camera, and her chestnut brown hair lifting slightly with each step. On both sides of the sidewalk, three-story red brick #8C4A32 buildings with cream window frames, dark green shop awnings and small potted shrubs by the doorways pass by at the same steady rate, one building after another in the same style, with a few parked cars along the curb to her left. The street stretches far behind her in soft perspective, and the same kind of brick buildings and awnings keep appearing as she walks. Her mustard #D9A441 sweater shows its soft knit texture where the light falls on her shoulders, and her dark blue #3E5C8A jeans hold their even color as she moves. Her footsteps land in a steady rhythm on the concrete, and she keeps the same pace and distance from the camera at every moment. The camera speed, framing, overcast light, red brick #8C4A32 buildings, mustard #D9A441 sweater, dark blue #3E5C8A jeans and the level of fine detail stay exactly the same from the first frame to the last.\n\noverall_soundscape:\nThe steady soft tap of her canvas sneakers on concrete sits over a quiet city street ambience, with a distant car passing now and then and faint birdsong from the rooftops. The sound stays clear, full-range and at a steady level throughout.\n\nnon_diegetic_music:\nN/A"
+        "subject_definitions:\n<Subject 1>: An adult woman in her late twenties with shoulder-length wavy chestnut brown hair, wearing a fitted mustard knit sweater #D9A441, straight-leg dark blue jeans #3E5C8A and white canvas sneakers. The character sheet supplies her face, hair, build and clothing.\n\nsummary:\n[reference generation] A single continuous slow arc shot circling <Subject 1> as she sits on a wooden stool in the middle of a warm, softly lit living room, steadily strumming an acoustic guitar in a looping rhythm.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - her face, chestnut brown hair, build and clothing are kept from the character sheet, and she takes the warm lamplight of this scene rather than the lighting of the reference.\n\ndetailed_description:\nThe video is a photorealistic live-action recording from a camera on a smooth dolly. Warm, soft light from two table lamps with cream shades falls evenly across the woman and the room, with gentle shadows that keep their detail and highlights that never clip. Contrast is moderate and steady, exposure is balanced, and color saturation is natural and constant throughout. The walls are a warm greige #B8A99A, the rug beneath her is a deep brick red #8E3B2E, her sweater is mustard #D9A441 and her jeans are dark blue #3E5C8A, and all four colors keep the same strength and saturation for the whole video. Fine detail is natural, even and steady across her skin, hair, sweater knit, the guitar and the room.\n[Shot 1] Arc Shot at slow speed with small amplitude. The camera is already circling slowly to the right around <Subject 1>, holding her in the center of the frame from just above the top of her head to her knees at the same distance at every moment. She sits on a plain light oak wooden stool in the middle of a deep brick red #8E3B2E rug, playing a natural spruce acoustic guitar with a dark brown neck that rests on her right thigh. Her right hand brushes down and up across the strings in a relaxed, even strum, and the fingers of her left hand move between the same four chord shapes on the neck, looping the same pattern without pause. Her eyes stay lowered toward the guitar neck, her head nods gently on each beat, and her shoulders sway a small, steady amount with each bar. As the camera moves, the room behind her slides past slowly and evenly: warm greige #B8A99A walls, tall dark walnut bookshelves filled with books, a green potted fiddle-leaf fig, a cream armchair, and the two table lamps, with more of the same shelves, plants and furniture continuing around the room in the same style. Her mustard #D9A441 sweater shows its soft knit texture where the lamplight falls on her arms, and her dark blue #3E5C8A jeans hold their even color. The guitar sounds warm and clear, a relaxed mid-tempo strum of the same four chords looping without change, its bright top end and full low end holding at one steady volume. The camera speed, framing, lamplight, greige #B8A99A walls, brick red #8E3B2E rug, mustard #D9A441 sweater, dark blue #3E5C8A jeans and the level of fine detail stay exactly the same from the first frame to the last.\n\noverall_soundscape:\nA quiet, small room tone sits under the guitar, with the faint creak of the wooden stool as she sways and the soft brush of her sweater sleeve as her strumming arm moves. The sound stays clear, full-range and at a steady level throughout.\n\nnon_diegetic_music:\nN/A"
       ],
       "widgets_values_named": {
-        "value": "subject_definitions:\n<Subject 1>: An adult woman in her late twenties with shoulder-length wavy chestnut brown hair, wearing a fitted mustard knit sweater #D9A441, straight-leg dark blue jeans #3E5C8A and white canvas sneakers. The character sheet supplies her face, hair, build and clothing.\n\nsummary:\n[reference generation] A single continuous tracking shot following <Subject 1> from the front as she walks at a steady pace along a long, straight city sidewalk lined with red brick buildings on a bright overcast day.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - her face, chestnut brown hair, build and clothing are kept from the character sheet, and she takes the soft overcast daylight of this scene rather than the lighting of the reference.\n\ndetailed_description:\nThe video is a photorealistic live-action recording from a handheld gimbal camera. Soft, even overcast daylight falls on the woman and the street from above, with gentle shadows that keep their detail and a pale grey sky whose highlights never clip. Contrast is moderate and steady, exposure is balanced, and color saturation is natural and constant throughout. The buildings are red brick #8C4A32 with cream window frames, her sweater is mustard #D9A441 and her jeans are dark blue #3E5C8A, and all three colors keep the same strength and saturation for the whole video. Fine detail is natural, even and steady across her skin, hair, sweater knit and the brick.\n[Shot 1] Tracking Shot at slow speed. The camera moves backward ahead of <Subject 1>, keeping her centered in the frame from the top of her head to her knees as she is already walking toward it along a wide grey concrete sidewalk. She walks at a relaxed, even pace, her arms swinging lightly at her sides, her eyes looking ahead past the camera, and her chestnut brown hair lifting slightly with each step. On both sides of the sidewalk, three-story red brick #8C4A32 buildings with cream window frames, dark green shop awnings and small potted shrubs by the doorways pass by at the same steady rate, one building after another in the same style, with a few parked cars along the curb to her left. The street stretches far behind her in soft perspective, and the same kind of brick buildings and awnings keep appearing as she walks. Her mustard #D9A441 sweater shows its soft knit texture where the light falls on her shoulders, and her dark blue #3E5C8A jeans hold their even color as she moves. Her footsteps land in a steady rhythm on the concrete, and she keeps the same pace and distance from the camera at every moment. The camera speed, framing, overcast light, red brick #8C4A32 buildings, mustard #D9A441 sweater, dark blue #3E5C8A jeans and the level of fine detail stay exactly the same from the first frame to the last.\n\noverall_soundscape:\nThe steady soft tap of her canvas sneakers on concrete sits over a quiet city street ambience, with a distant car passing now and then and faint birdsong from the rooftops. The sound stays clear, full-range and at a steady level throughout.\n\nnon_diegetic_music:\nN/A"
+        "value": "subject_definitions:\n<Subject 1>: An adult woman in her late twenties with shoulder-length wavy chestnut brown hair, wearing a fitted mustard knit sweater #D9A441, straight-leg dark blue jeans #3E5C8A and white canvas sneakers. The character sheet supplies her face, hair, build and clothing.\n\nsummary:\n[reference generation] A single continuous slow arc shot circling <Subject 1> as she sits on a wooden stool in the middle of a warm, softly lit living room, steadily strumming an acoustic guitar in a looping rhythm.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - her face, chestnut brown hair, build and clothing are kept from the character sheet, and she takes the warm lamplight of this scene rather than the lighting of the reference.\n\ndetailed_description:\nThe video is a photorealistic live-action recording from a camera on a smooth dolly. Warm, soft light from two table lamps with cream shades falls evenly across the woman and the room, with gentle shadows that keep their detail and highlights that never clip. Contrast is moderate and steady, exposure is balanced, and color saturation is natural and constant throughout. The walls are a warm greige #B8A99A, the rug beneath her is a deep brick red #8E3B2E, her sweater is mustard #D9A441 and her jeans are dark blue #3E5C8A, and all four colors keep the same strength and saturation for the whole video. Fine detail is natural, even and steady across her skin, hair, sweater knit, the guitar and the room.\n[Shot 1] Arc Shot at slow speed with small amplitude. The camera is already circling slowly to the right around <Subject 1>, holding her in the center of the frame from just above the top of her head to her knees at the same distance at every moment. She sits on a plain light oak wooden stool in the middle of a deep brick red #8E3B2E rug, playing a natural spruce acoustic guitar with a dark brown neck that rests on her right thigh. Her right hand brushes down and up across the strings in a relaxed, even strum, and the fingers of her left hand move between the same four chord shapes on the neck, looping the same pattern without pause. Her eyes stay lowered toward the guitar neck, her head nods gently on each beat, and her shoulders sway a small, steady amount with each bar. As the camera moves, the room behind her slides past slowly and evenly: warm greige #B8A99A walls, tall dark walnut bookshelves filled with books, a green potted fiddle-leaf fig, a cream armchair, and the two table lamps, with more of the same shelves, plants and furniture continuing around the room in the same style. Her mustard #D9A441 sweater shows its soft knit texture where the lamplight falls on her arms, and her dark blue #3E5C8A jeans hold their even color. The guitar sounds warm and clear, a relaxed mid-tempo strum of the same four chords looping without change, its bright top end and full low end holding at one steady volume. The camera speed, framing, lamplight, greige #B8A99A walls, brick red #8E3B2E rug, mustard #D9A441 sweater, dark blue #3E5C8A jeans and the level of fine detail stay exactly the same from the first frame to the last.\n\noverall_soundscape:\nA quiet, small room tone sits under the guitar, with the faint creak of the wooden stool as she sways and the soft brush of her sweater sleeve as her strumming arm moves. The sound stays clear, full-range and at a steady level throughout.\n\nnon_diegetic_music:\nN/A"
       },
       "color": "#346434",
       "bgcolor": "rgba(24,24,27,.9)"
@@ -1254,13 +1252,13 @@
         "previewExposures": []
       },
       "widgets_values": [
-        625725953040159,
+        41639107201124,
         8,
         "euler",
         "simple"
       ],
       "widgets_values_named": {
-        "noise_seed": 625725953040159,
+        "noise_seed": 41639107201124,
         "steps": 8,
         "sampler_name": "euler",
         "scheduler": "simple"
@@ -1346,11 +1344,11 @@
         "previewExposures": []
       },
       "widgets_values": [
-        1112920364048554,
+        776538083543438,
         7
       ],
       "widgets_values_named": {
-        "noise_seed": 1112920364048554,
+        "noise_seed": 776538083543438,
         "step": 7
       }
     },
@@ -1667,11 +1665,11 @@
       "type": "Note",
       "pos": [
         -2740,
-        5290
+        5270
       ],
       "size": [
         400,
-        130
+        150
       ],
       "flags": {},
       "order": 17,
@@ -1748,14 +1746,6 @@
       "LATENT"
     ],
     [
-      1034,
-      495,
-      1,
-      494,
-      2,
-      "INT"
-    ],
-    [
       1035,
       495,
       1,
@@ -1802,14 +1792,6 @@
       498,
       0,
       "SIGMAS"
-    ],
-    [
-      1062,
-      536,
-      2,
-      494,
-      0,
-      "LATENT"
     ],
     [
       1055,
@@ -1881,14 +1863,6 @@
       2,
       537,
       4,
-      "LATENT"
-    ],
-    [
-      1076,
-      537,
-      0,
-      494,
-      1,
       "LATENT"
     ],
     [
@@ -2018,6 +1992,30 @@
       503,
       13,
       "INT"
+    ],
+    [
+      1062,
+      536,
+      2,
+      494,
+      0,
+      "LATENT"
+    ],
+    [
+      1076,
+      537,
+      0,
+      494,
+      1,
+      "LATENT"
+    ],
+    [
+      1034,
+      495,
+      1,
+      494,
+      2,
+      "INT"
     ]
   ],
   "groups": [
@@ -2113,7 +2111,7 @@
         "version": 1,
         "state": {
           "lastGroupId": 10,
-          "lastNodeId": 548,
+          "lastNodeId": 549,
           "lastLinkId": 1092,
           "lastRerouteId": 0
         },
@@ -2612,7 +2610,7 @@
         "version": 1,
         "state": {
           "lastGroupId": 10,
-          "lastNodeId": 548,
+          "lastNodeId": 549,
           "lastLinkId": 1092,
           "lastRerouteId": 0
         },
@@ -3205,7 +3203,7 @@
         "version": 1,
         "state": {
           "lastGroupId": 10,
-          "lastNodeId": 548,
+          "lastNodeId": 549,
           "lastLinkId": 1092,
           "lastRerouteId": 0
         },
@@ -3670,7 +3668,7 @@
         "version": 1,
         "state": {
           "lastGroupId": 10,
-          "lastNodeId": 548,
+          "lastNodeId": 549,
           "lastLinkId": 1092,
           "lastRerouteId": 0
         },
@@ -4167,13 +4165,17 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.5729854673368048,
+      "scale": 0.6302840140704864,
       "offset": [
-        3433.454570259957,
-        -4966.962037555239
+        3459.355209317194,
+        -5058.159059765528
       ]
     },
     "frontendVersion": "1.55.17"
   },
-  "version": 0.4
+  "version": 0.4,
+  "seed_widgets": {
+    "536": 0,
+    "537": 0
+  }
 }

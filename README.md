@@ -267,8 +267,9 @@ versions.
   so the final step adds less extra sharpness. Optional; results vary
   more from scene to scene than the other two.
 
-Refine Blend and Join Match default to `tuning: auto`, which reads each
-clip and picks their settings for you. `manual` uses the widgets as set.
+Join Match defaults to `tuning: auto`, which reads each clip, tells a
+locked-off shot from a moving one, and picks its settings for you.
+`manual` uses the widgets as set.
 
 ```
 BasicScheduler -> H3 Sigmas Tail (optional) -> main sampler, sigmas

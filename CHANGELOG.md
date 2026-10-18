@@ -8,6 +8,21 @@ rejected any keyframe anchor other than the first or last frame. That
 landed in ComfyUI 0.34.0. Every release through 0.33.4 has the older
 layout. Each entry below says which of the two it works with.
 
+## 0.7.1 - unreleased
+
+Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
+
+- H3 Join Match: `tuning: auto` now tells locked-off shots from moving
+  ones reliably. The cutoff was a first guess in 0.7.0 and sat too low,
+  so every shot was read as moving and got the cautious settings. It is
+  now set from test chains of a locked-off shot, a tracking shot and a
+  slow orbit, which landed well apart.
+- H3 Refine Blend: the `tuning` widget is gone. Across all three test
+  chains the one-step refine moved the clip by about the same amount, so
+  auto picked the same 22 frame ramp every time. `blend_frames` is used
+  as set, default 22. Saved workflows still load; the extra value is
+  ignored.
+
 ## 0.7.0 - 2026-10-17
 
 Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
