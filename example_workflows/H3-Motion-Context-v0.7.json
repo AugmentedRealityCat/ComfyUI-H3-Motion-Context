@@ -306,12 +306,12 @@
       },
       "widgets_values": [
         "h3_context",
-        4,
+        0,
         false
       ],
       "widgets_values_named": {
         "latent_path": "h3_context",
-        "clip_index": 4,
+        "clip_index": 0,
         "stock_format": false
       },
       "color": "#1f1f48",
@@ -350,11 +350,11 @@
       },
       "widgets_values": [
         "h3_context/clip",
-        5
+        1
       ],
       "widgets_values_named": {
         "filename_prefix": "h3_context/clip",
-        "clip_index": 5
+        "clip_index": 1
       },
       "color": "#1f1f48",
       "bgcolor": "rgba(24,24,27,.9)"
@@ -441,14 +441,14 @@
         22,
         "original",
         true,
-        4
+        0
       ],
       "widgets_values_named": {
         "hold_frames": 22,
         "blend_frames": 22,
         "audio": "original",
         "use_refine": true,
-        "clip_index": 4
+        "clip_index": 0
       },
       "color": "#1f1f48",
       "bgcolor": "rgba(24,24,27,.9)"
@@ -632,7 +632,7 @@
         "cnr_id": "crt-nodes",
         "ver": "d1bbdcb1d49cc5bdc0c43db75ba44d649f10b611",
         "Node name for S&R": "FancyTimerNode",
-        "elapsed_time_str": "03:59:641"
+        "elapsed_time_str": "04:06:819"
       },
       "widgets_values": [
         ""
@@ -1252,13 +1252,13 @@
         "previewExposures": []
       },
       "widgets_values": [
-        41639107201124,
+        920812216680783,
         8,
         "euler",
         "simple"
       ],
       "widgets_values_named": {
-        "noise_seed": 41639107201124,
+        "noise_seed": 920812216680783,
         "steps": 8,
         "sampler_name": "euler",
         "scheduler": "simple"
@@ -1344,11 +1344,11 @@
         "previewExposures": []
       },
       "widgets_values": [
-        776538083543438,
+        19392429984604,
         7
       ],
       "widgets_values_named": {
-        "noise_seed": 776538083543438,
+        "noise_seed": 19392429984604,
         "step": 7
       }
     },
@@ -1930,6 +1930,30 @@
       "AUDIO"
     ],
     [
+      1062,
+      536,
+      2,
+      494,
+      0,
+      "LATENT"
+    ],
+    [
+      1076,
+      537,
+      0,
+      494,
+      1,
+      "LATENT"
+    ],
+    [
+      1034,
+      495,
+      1,
+      494,
+      2,
+      "INT"
+    ],
+    [
       1041,
       535,
       1,
@@ -1991,30 +2015,6 @@
       0,
       503,
       13,
-      "INT"
-    ],
-    [
-      1062,
-      536,
-      2,
-      494,
-      0,
-      "LATENT"
-    ],
-    [
-      1076,
-      537,
-      0,
-      494,
-      1,
-      "LATENT"
-    ],
-    [
-      1034,
-      495,
-      1,
-      494,
-      2,
       "INT"
     ]
   ],
@@ -4167,15 +4167,11 @@
     "ds": {
       "scale": 0.6302840140704864,
       "offset": [
-        3459.355209317194,
-        -5058.159059765528
+        3481.567417920726,
+        -5085.131027355567
       ]
     },
     "frontendVersion": "1.55.17"
   },
-  "version": 0.4,
-  "seed_widgets": {
-    "536": 0,
-    "537": 0
-  }
+  "version": 0.4
 }
