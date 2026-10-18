@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+node.zip
+.ruff_cache/
+.cursor/

@@ -8,10 +8,20 @@ rejected any keyframe anchor other than the first or last frame. That
 landed in ComfyUI 0.34.0. Every release through 0.33.4 has the older
 layout. Each entry below says which of the two it works with.
 
-## Unreleased
+## 0.7.1 - unreleased
 
 Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
 
+- H3 Join Match: `tuning: auto` now tells locked-off shots from moving
+  ones reliably. The cutoff was a first guess in 0.7.0 and sat too low,
+  so every shot was read as moving and got the cautious settings. It is
+  now set from test chains of a locked-off shot, a tracking shot and a
+  slow orbit, which landed well apart.
+- H3 Refine Blend: the `tuning` widget is gone. Across all three test
+  chains the one-step refine moved the clip by about the same amount, so
+  auto picked the same 22 frame ramp every time. `blend_frames` is used
+  as set, default 22. Saved workflows still load; the extra value is
+  ignored.
 - Save Latent reports its file as `ui.latents` (`filename`, `subfolder`,
   `type: "output"`), the same shape as stock Save Latent, so the file shows
   in `/history` and can be fetched through `/view`. Its output is
@@ -24,6 +34,41 @@ Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
 - Smoke test: the `IS_CHANGED` check compares resolved, case-normalised
   paths, so it passes when `%TEMP%` differs from its realpath (casing,
   short names, junctions) on Windows.
+
+## 0.7.0 - 2026-10-17
+
+Requires ComfyUI 0.34.0 or newer. Use 0.3.1 on anything older.
+
+Three experimental nodes for drift down long chains. They reduce it, they
+don't remove it, and their behavior and defaults may change in later
+versions.
+
+- **H3 Refine Blend.** Holds the pinned frames exactly as sampled and
+  blends in a one-step refined version of the rest of the clip, so each
+  clip re-reads the references instead of only copying the previous one.
+  `tuning: auto` picks the ramp length from how far the refine moved the
+  clip. The Chain node keeps its `clip_index` in step when it shares their
+  canvas group; on the first clip the whole clip is refined. With
+  `use_refine` off the second sampler does not run at all.
+- **H3 Join Match.** After sampling, removes the step in average, spread
+  and fine detail between the previous clip's last frames and this clip's
+  first new frames. `tuning: auto` reads whether the shot is locked-off or
+  moving and sets its guards. Made for still shots; moving shots are
+  mostly left alone.
+- **H3 Sigmas Tail.** Reshapes the last few noise levels before zero so
+  the final step adds less sharpness.
+- Load Latent has an optional `stock_format` toggle. On, it outputs a
+  standard H3 video+audio latent that stock nodes accept. Off, the
+  default, keeps the Motion Context-only format.
+- Example workflow replaced. It is Ref2VA only now; the FL2VA path is
+  gone. It is wired with all three new nodes at their recommended
+  settings, and includes a character reference image
+  (`example_workflows/character.png`), an example prompt, and the Ref2VA
+  prompt-writing system prompt as a note.
+- Recommended `audio_context_length` is now 18, down from 24.
+- README: new "Reducing drift (experimental)" section. Corrected the note
+  on how H3 rounds its audio grid, and the audio continuation figures.
+- `node.zip` added to `.gitignore`.
 
 ## 0.6.2 - 2026-09-06
 

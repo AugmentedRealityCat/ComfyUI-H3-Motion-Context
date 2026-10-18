@@ -27,7 +27,7 @@ by anything else.
 
 **The picture goes out to pixels and back at every link.** Add Guide takes
 images and encodes them. Chain through it and every join costs a decode, a
-resize and a re-encode. That round trip is where the colour drift and the
+resize and a re-encode. That round trip is where the color drift and the
 softening down a long chain come from. This pack slices the previous
 clip's tail straight out of its latent, so the pinned frames are the same
 numbers they were, bit for bit.
@@ -116,7 +116,7 @@ skip slots. Use **H3 Motion Context Chain** instead of ComfyUI's Run
 button.
 
 **The Chain node only sees Load and Save if all three sit in the same
-canvas group** (one of those coloured boxes you draw around nodes). If
+canvas group** (one of those colored boxes you draw around nodes). If
 they are not grouped together, every button does nothing. Select Load,
 Save, and Chain, then Group Selected (or drop Chain into the existing
 Motion Context group).
@@ -146,16 +146,19 @@ and indexed loading skips them on purpose.
 
 You can also point the loader at a specific file when `clip_index` is
 greater than 0; the file is loaded and the index is ignored. Index 0
-never reads a file.
-Its output is only for `context_latent`. Don't wire it into a decode node.
-Stock Save/Load Latent won't work here, it can't handle H3's paired
-video/audio latent.
+never reads a file. Latent paths have to stay inside ComfyUI's output
+folder.
+
+By default the loader's output is only for `context_latent`. Don't wire
+it into a decode node. Turn on `stock_format` if you want a standard H3
+latent that stock nodes accept instead. Stock Save/Load Latent won't work
+here, it can't handle H3's paired video/audio latent.
 
 The latent carries both streams, so with it wired you don't need to load
 the previous clip's video at all. The pinned frames are sliced straight
 out of it rather than decoded to pixels and encoded again, so they're
 exactly what the model made instead of a reconstruction. Nothing shifts
-the colour or the contrast, so there's no seam to see, and it's faster.
+the color or the contrast, so there's no seam to see, and it's faster.
 
 Nothing to set for any of that. Leave `context_frames` unwired. Resolution
 has to match between clips, since a latent can't be resized; if it doesn't
@@ -238,11 +241,15 @@ frames you throw away. **Use 22.**
 **audio_context_length** - frames of tail audio to pin, independent of the
 picture window. It ends at the same instant as the pinned video, so this
 only controls how far back the sound reaches. 0 follows context_length.
-**Use 24**: that is exactly one second of sound, and any multiple of 3
-lands exactly on the model's 40 Hz audio grid (a frame is 5/3 of an
-audio step), so the window is pinned at precisely the width you asked
-for. Off-grid values are widened to the nearest whole step. Increments
-of 24 keep whole seconds: 48 pins the last two.
+**Use 18.** Longer windows hold the sound closer to the previous clip, but
+it gets a little more muffled and a little quieter at every join; at 24
+that is audible within a few clips. Shorter windows keep the level and the
+joins clean, but the music wanders further from clip to clip. 18 is the
+best balance found so far on music chains. Some treble loss remains at
+every length. Any multiple of 3 lands exactly on the model's 40 Hz audio
+grid (a frame is 5/3 of an audio step), so the window is pinned at
+precisely the width you asked for. Off-grid values are widened to the
+nearest whole step.
 
 Everything else is fixed: the pinned run is encoded in one VAE call, it
 sits at the head of the clip where the Trim node removes it, and the
@@ -252,9 +259,54 @@ top of `nodes.py` now. Change one there if you ever need to see what they
 did.
 
 `match_tail` on the Trim node stays a setting because that node has no
-idea what the other one did. Leave it on. H3 rounds its audio grid up, so
-every clip carries about 8ms more sound than picture, and that error
-stacks at every join.
+idea what the other one did. Leave it on. H3 rounds its audio grid to the
+nearest step, so every clip carries about 8ms too much or too little
+sound, and that error stacks at every join.
+
+## Reducing drift (experimental)
+
+Long chains drift. Faces polish or age, fine detail builds up, and color
+and contrast shift a little at every join. Three experimental nodes work
+on that. They reduce drift, they don't remove it, and how much they help
+depends on the scene. Their behavior and defaults may change in later
+versions.
+
+- **H3 Refine Blend** gives each clip a light second pass so it re-reads
+  your references instead of only copying the previous clip. The pinned
+  frames are kept exactly as sampled, so the join stays closed, and the
+  refined version is blended in after them. Put it in the same canvas
+  group as Load, Save and Chain; the Chain node keeps it in step.
+- **H3 Join Match** removes the small jump in brightness, contrast and
+  fine detail between the previous clip's last frames and this clip's
+  first new frames. It works best when the camera and scene hold still.
+  On moving shots it mostly leaves the clip alone.
+- **H3 Sigmas Tail** reshapes the last few noise levels of the schedule
+  so the final step adds less extra sharpness. Optional; results vary
+  more from scene to scene than the other two.
+
+Join Match defaults to `tuning: auto`, which reads each clip, tells a
+locked-off shot from a moving one, and picks its settings for you.
+`manual` uses the widgets as set.
+
+```
+BasicScheduler -> H3 Sigmas Tail (optional) -> main sampler, sigmas
+
+main sampler ─┬────────────────────────────────> Refine Blend (original)
+              └─> refine sampler, one step ────> Refine Blend (refined)
+
+Refine Blend -> H3 Join Match -> Save Latent, VAE Decode, VAE Decode Audio
+Motion Context trim_frames -> Join Match context_length
+Load Latent -> Join Match context_latent
+```
+
+The refine sampler takes one step: Split Sigmas on the BasicScheduler
+output (before any Sigmas Tail), step 7 for an 8 step schedule, with its
+`low_sigmas` into the second sampler. Give it the plain Reference to
+Video conditioning, not the Motion Context output, and its own random
+seed.
+
+Save Latent and both decodes take Join Match's output, so the video you
+keep matches the latent the next clip continues from.
 
 ## Writing prompts for a chain
 
@@ -302,11 +354,15 @@ and exactly wrong for continuation.
 The fix is the same one that already worked for video. The rows the model
 sees are identical either way. What differs is their time coordinates, and
 the coordinates are what say "separate clip" versus "this clip, earlier."
-So the pinned audio still rides the reference machinery, but its
-coordinates get rewritten onto the new clip's timeline, ending exactly
-where the pinned video ends. Correlation at the joins went from about 0.45
-with incoherent timing to 0.95+ with a flat offset, and the tick was gone.
-Measured across a chain, the offset doesn't grow from join to join.
+So the pinned audio is placed on the new clip's own timeline, ending
+exactly where the pinned video ends. The timing locked to a flat offset
+that doesn't grow from join to join, and the tick was gone.
+
+It isn't a perfect continuation yet. Measured in the latent, the model
+still regenerates part of the pinned sound rather than carrying all of it
+through, which is where the treble loss down a chain comes from. The beat
+stays put and the join stops sounding like a splice, but the sound is
+partly continued and partly redrawn.
 
 ## Limitations
 
@@ -322,7 +378,8 @@ out to pixels and back. `context_latent` removes the second one for both
 streams. On picture that's the difference between a visible join and no
 join at all. On sound it helps, but the model's own smoothing is still
 there. Long chains are worth listening to critically, and restarts land
-best at a natural musical transition.
+best at a natural musical transition. For the picture side, see
+"Reducing drift (experimental)" above.
 
 **A small audio offset, now believed fixed.** Chained clips used to come
 out about 8ms late. The cause was arithmetic: a frame is 5/3 of an audio
@@ -383,7 +440,7 @@ on it.
 
 ## Recommended starting point
 
-`context_length 22`, `audio_context_length 24`, `context_latent` wired
+`context_length 22`, `audio_context_length 18`, `context_latent` wired
 through the Save/Load Latent pair, Trim node wired for picture and sound
 with `match_tail` on, Spectrum off. Every "it works" in this README means
 that config.
@@ -485,8 +542,13 @@ Open an issue.
 | File | Role |
 |---|---|
 | `layout_contract.py` | Proves ComfyUI still places anchors and pinned audio where this pack needs them, once, before the first render. Modifies nothing. |
-| `nodes.py` | The four core nodes: Motion Context, Trim, and the latent Save/Load pair. |
+| `nodes.py` | The core nodes: Motion Context, Trim, the latent Save/Load pair, and Chain. |
+| `csrf_guard.py` | Makes sure requests to the Chain node's routes come from ComfyUI's own page. |
 | `probe_node.py` | The Seam Probe node: measures a join in-graph, with the seam at a known sample instead of inferred from file ends. |
+| `refine_blend.py` | H3 Refine Blend (experimental): holds the pinned frames and blends in a refined version of the rest of the clip. |
+| `join_match.py` | H3 Join Match (experimental): removes the step in brightness, contrast and fine detail at each join. |
+| `sigma_tools.py` | H3 Sigmas Tail (experimental): reshapes the last few noise levels of the schedule. |
+| `web/h3_motion_context.js` | The Chain node's buttons, and keeping Load, Save and Refine Blend indices in step. |
 | `tests/seam_probe.py` | Is a join's audio a real continuation, a sound-alike, or drifting. |
 | `tests/level_step.py` | Level and room-tone continuity at each join. Also catches sample-rate mismatches. |
 | `tests/freeze_detect.py` | Stretches where the picture stops moving. |

@@ -753,7 +753,7 @@ def main():
     # the new widget is optional and last, so saved graphs keep positions
     it = nodes.MiniMaxH3MotionContextLoadLatent.INPUT_TYPES()
     assert list(it["required"]) == ["latent_path", "clip_index"]
-    assert list(it["optional"]) == ["folder"]
+    assert list(it["optional"]) == ["stock_format", "folder"]
     assert it["optional"]["folder"][0] == ["output", "input"]
     assert it["optional"]["folder"][1]["default"] == "output"
     print("input folder: uploaded file loads, index 0 loads nothing, "
