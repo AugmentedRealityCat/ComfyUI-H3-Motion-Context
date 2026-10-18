@@ -804,22 +804,55 @@ class MiniMaxH3MotionContextTrim:
         return (out_images, out_audio)
 
 
-def _under_output(path):
-    """Resolve `path` inside ComfyUI's output folder. None if it would escape.
+def _under_root(root, path, default=""):
+    """Resolve `path` inside `root`. None if it would escape.
 
-    Absolute paths are allowed only when they already live under output/.
-    Relative paths join onto output/. This is what keeps latent_path from
-    becoming an arbitrary file read or a delete-anywhere on Clear.
+    Absolute paths are allowed only when they already live under root.
+    Relative paths join onto root. Compared case-insensitively where the
+    filesystem is (normcase), so D:\\Temp and D:\\TEMP are the same root.
     """
-    root = os.path.realpath(folder_paths.get_output_directory())
-    p = (path or "").strip().strip('"').strip("'") or "h3_context"
+    root = os.path.realpath(root)
+    p = (path or "").strip().strip('"').strip("'") or default
+    if not p:
+        return None
     resolved = os.path.realpath(p if os.path.isabs(p) else os.path.join(root, p))
-    if resolved != root and not resolved.startswith(root + os.sep):
+    r, c = os.path.normcase(root), os.path.normcase(resolved)
+    if c != r and not c.startswith(r.rstrip(os.sep) + os.sep):
         return None
     return resolved
 
 
-def _resolve_latent_path(path, clip_index=0):
+def _under_output(path):
+    """Resolve `path` inside ComfyUI's output folder. None if it would escape.
+
+    This is what keeps latent_path from becoming an arbitrary file read or a
+    delete-anywhere on Clear.
+    """
+    return _under_root(folder_paths.get_output_directory(), path, "h3_context")
+
+
+LATENT_FOLDERS = ("output", "input")
+
+
+def _resolve_input_latent(path):
+    """A latent FILE inside ComfyUI's input folder (uploaded via /upload/image).
+
+    Input mode never picks slots from a folder: the uploader names the exact
+    file, so there is nothing to choose between.
+    """
+    c = _under_root(folder_paths.get_input_directory(), path)
+    if not c:
+        raise FileNotFoundError(
+            "h3_motion_context: path must name a file inside the ComfyUI "
+            "input folder.")
+    if not os.path.isfile(c):
+        raise FileNotFoundError(
+            "h3_motion_context: no latent file %r in the ComfyUI input "
+            "folder." % (path or "").strip())
+    return c
+
+
+def _resolve_latent_path(path, clip_index=0, folder="output"):
     """Turn the loader's path input into a concrete file under output/.
 
     Accepts a path relative to ComfyUI's output folder, an absolute path
@@ -828,8 +861,14 @@ def _resolve_latent_path(path, clip_index=0):
     *_00001.safetensors. Auto-mode files carry a trailing underscore
     (*_00001_.safetensors) and are never matched, because their numbers
     count runs and could hold a reject. clip_index 0 is handled by the
-    Load node itself (no file, first clip).
+    Load node itself (no file, first clip). folder="input" reads one file
+    from the input folder instead; see _resolve_input_latent.
     """
+    if folder == "input":
+        return _resolve_input_latent(path)
+    if folder != "output":
+        raise ValueError("h3_motion_context: folder must be one of %s, got %r."
+                         % (", ".join(LATENT_FOLDERS), folder))
     c = _under_output(path)
     if not c:
         raise FileNotFoundError(
@@ -1048,7 +1087,15 @@ class MiniMaxH3MotionContextSaveLatent:
         _write_safetensors(path, {"video": video, "audio": audio})
         _LOG.info("h3_motion_context: saved AV latent to %s (video %s, "
                   "audio %s)", path, tuple(video.shape), tuple(audio.shape))
-        return (path,)
+        # report the file like stock Save Latent's ui.latents, so an HTTP
+        # client can find it in /history and fetch it through /view
+        subfolder = os.path.relpath(os.path.dirname(path),
+                                    folder_paths.get_output_directory())
+        subfolder = "" if subfolder == "." else subfolder.replace(os.sep, "/")
+        return {"ui": {"latents": [{"filename": os.path.basename(path),
+                                    "subfolder": subfolder,
+                                    "type": "output"}]},
+                "result": (path,)}
 
 
 class MiniMaxH3MotionContextLoadLatent:
@@ -1103,6 +1150,15 @@ class MiniMaxH3MotionContextLoadLatent:
                                "context_latent input. On: a standard H3 "
                                "video+audio latent that stock nodes (Separate "
                                "AV Latent, Latent Cut, samplers) accept."}),
+                "folder": (list(LATENT_FOLDERS), {
+                    "default": "output",
+                    "tooltip": "Where latent_path lives. output: a file or "
+                               "chain folder under the ComfyUI output "
+                               "directory (the normal chain). input: one "
+                               "file under the ComfyUI input directory, "
+                               "e.g. uploaded over HTTP by an external "
+                               "tool. clip_index 0 still loads nothing; "
+                               "above 0 it loads that file."}),
             },
         }
 
@@ -1114,7 +1170,8 @@ class MiniMaxH3MotionContextLoadLatent:
                    "stock_format outputs a standard H3 AV latent.")
 
     @classmethod
-    def IS_CHANGED(cls, latent_path, clip_index=0, stock_format=False):
+    def IS_CHANGED(cls, latent_path, clip_index=0, stock_format=False,
+                   folder="output"):
         # the path string stays constant while the file behind it changes
         # (an overwritten slot), so cache on the resolved file identity
         # instead, otherwise ComfyUI would happily serve a stale latent
@@ -1122,19 +1179,20 @@ class MiniMaxH3MotionContextLoadLatent:
         if int(clip_index) <= 0:
             return "disabled"
         try:
-            p = _resolve_latent_path(latent_path, clip_index)
-            return "%s:%d:owned:%s" % (p, os.stat(p).st_mtime_ns,
-                                        bool(stock_format))
+            p = _resolve_latent_path(latent_path, clip_index, folder)
+            return "%s:%d:owned" % (p, os.stat(p).st_mtime_ns) + (
+                ":stock" if stock_format else "")
         except Exception:
             return float("NaN")  # unresolvable: never cache
 
-    def load(self, latent_path, clip_index=0, stock_format=False):
+    def load(self, latent_path, clip_index=0, stock_format=False,
+             folder="output"):
         if int(clip_index) <= 0:
             return (None,)
         if _st_load is None:
             raise RuntimeError("h3_motion_context: safetensors is not "
                                "available; cannot load latents.")
-        path = _resolve_latent_path(latent_path, clip_index)
+        path = _resolve_latent_path(latent_path, clip_index, folder)
         data = _st_load(path)
         if "video" not in data or "audio" not in data:
             raise ValueError(

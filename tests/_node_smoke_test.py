@@ -113,8 +113,10 @@ def main():
     import os
     import tempfile
     outdir = tempfile.mkdtemp()
+    indir = tempfile.mkdtemp()
     fp = types.ModuleType("folder_paths")
     fp.get_output_directory = lambda: outdir
+    fp.get_input_directory = lambda: indir
 
     def get_save_image_path(prefix, out, *a):
         sub, name = os.path.split(prefix)
@@ -573,13 +575,24 @@ def main():
     import time
     saver = nodes.MiniMaxH3MotionContextSaveLatent()
     loader = nodes.MiniMaxH3MotionContextLoadLatent()
-    (p1,) = saver.save(prev, "h3_context/clip")
+
+    def _save(*a, **k):
+        return saver.save(*a, **k)["result"]
+
+    def _same_file(a, b):
+        # %TEMP% can differ from its realpath by casing, a short (8.3) name
+        # or a junction, so compare what both resolve to
+        def norm(p):
+            return os.path.normcase(os.path.realpath(p))
+        return norm(a) == norm(b)
+
+    (p1,) = _save(prev, "h3_context/clip")
     time.sleep(0.02)
     prev2 = {"samples": Nested([
         prev["samples"].parts[0],
         T(prev["samples"].parts[1].a * 2.0),  # distinguishable content
     ])}
-    (p2,) = saver.save(prev2, "h3_context/clip")
+    (p2,) = _save(prev2, "h3_context/clip")
     assert p1 != p2
     (loaded,) = loader.load(p2, clip_index=1)  # specific file
     parts = loaded["samples"]
@@ -595,7 +608,9 @@ def main():
     assert got == want, (got, want)
     assert abs(audio_end() - 22.2) < 1e-6
     ic1 = loader.IS_CHANGED(p2, clip_index=1)
-    assert isinstance(ic1, str) and p2 in ic1  # cache keys on the real file
+    # cache keys on the real file: "<path>:<mtime_ns>:owned"
+    assert isinstance(ic1, str) and ic1.endswith(":owned"), ic1
+    assert _same_file(ic1.rsplit(":", 2)[0], p2), (ic1, p2)
     assert loader.IS_CHANGED("h3_context", clip_index=0) == "disabled"
     (empty,) = loader.load("h3_context", clip_index=0)
     assert empty is None
@@ -613,12 +628,12 @@ def main():
     prevB2 = {"samples": Nested([prev["samples"].parts[0],
                                  T(np.full((1, 32, 2, audio_t), 9.0,
                                            dtype=np.float32))])}
-    (pa,) = saver.save(prevA, "h3_context/clip", clip_index=2)   # clip 2 ok
+    (pa,) = _save(prevA, "h3_context/clip", clip_index=2)   # clip 2 ok
     assert pa.endswith("_00002.safetensors"), pa  # natural slot name
     time.sleep(0.02)
-    (pb1,) = saver.save(prevB1, "h3_context/clip", clip_index=3)  # clip 3 try 1
+    (pb1,) = _save(prevB1, "h3_context/clip", clip_index=3)  # clip 3 try 1
     time.sleep(0.02)
-    (pb2,) = saver.save(prevB2, "h3_context/clip", clip_index=3)  # re-roll
+    (pb2,) = _save(prevB2, "h3_context/clip", clip_index=3)  # re-roll
     assert pb1 == pb2 and pa != pb1  # re-roll overwrote its own slot
     # generating clip 3, continuing FROM clip 2: loader index is 2, literally
     (l3,) = loader.load("h3_context", clip_index=2)
@@ -636,7 +651,7 @@ def main():
         raise AssertionError("missing slot did not refuse")
     # an auto-numbered near-miss (trailing underscore) is never matched,
     # and the error explains the rename
-    (pauto,) = saver.save(prevA, "h3_context/clip", clip_index=0)
+    (pauto,) = _save(prevA, "h3_context/clip", clip_index=0)
     assert pauto.endswith("_.safetensors"), pauto
     import re as _re
     runno = int(_re.search(r"_(\d{5})_\.safetensors$", pauto).group(1))
@@ -668,6 +683,81 @@ def main():
     finally:
         shutil.rmtree(td)
     print("reset clear: numbered slots gone, custom names left alone")
+
+    # Save reports its file like stock Save Latent (ui.latents), so an
+    # HTTP client can find it in /history and fetch it through /view
+    out = saver.save(prevA, "calliope/p7_c3", clip_index=1)
+    (ps,) = out["result"]
+    assert out["ui"] == {"latents": [{"filename": "p7_c3_00001.safetensors",
+                                      "subfolder": "calliope",
+                                      "type": "output"}]}, out["ui"]
+    assert _same_file(ps, os.path.join(outdir, "calliope",
+                                       "p7_c3_00001.safetensors"))
+    top = saver.save(prevA, "toplevel", clip_index=1)["ui"]["latents"][0]
+    assert top["subfolder"] == "" and \
+        top["filename"] == "toplevel_00001.safetensors", top
+    deep = saver.save(prevA, "a/b/c", clip_index=1)["ui"]["latents"][0]
+    assert deep["subfolder"] == "a/b", deep  # forward slashes, relative
+    print("save ui: ui.latents names the file relative to output/")
+
+    # folder="input": one uploaded file, same containment rule as output.
+    # (The fake safetensors file holds a pointer to its .npz, so a copy of
+    # it is a faithful "upload".)
+    up = os.path.join(indir, "calliope_p7_c3.safetensors")
+    shutil.copy(ps, up)
+    (li,) = loader.load("calliope_p7_c3.safetensors", clip_index=1,
+                        folder="input")
+    assert float(li["samples"][1].a[0, 0, 0, 0]) == 7.0
+    ici = loader.IS_CHANGED("calliope_p7_c3.safetensors", clip_index=1,
+                            folder="input")
+    assert _same_file(ici.rsplit(":", 2)[0], up), ici
+    # index 0 still loads nothing, even when the file exists
+    (none_in,) = loader.load("calliope_p7_c3.safetensors", clip_index=0,
+                             folder="input")
+    assert none_in is None
+    assert loader.IS_CHANGED("calliope_p7_c3.safetensors", clip_index=0,
+                             folder="input") == "disabled"
+    # containment: no escaping input/, no absolute path elsewhere, and an
+    # output-folder file is not reachable through input mode
+    outside = os.path.join(os.path.dirname(indir), "x.safetensors")
+    for bad in ("..\\x.safetensors", "../x.safetensors", outside, ps, ""):
+        try:
+            loader.load(bad, clip_index=1, folder="input")
+        except FileNotFoundError as e:
+            assert "input folder" in str(e), (bad, str(e))
+        else:
+            raise AssertionError("input mode loaded %r" % bad)
+        ic_bad = loader.IS_CHANGED(bad, clip_index=1, folder="input")
+        assert ic_bad != ic_bad, (bad, ic_bad)  # NaN: never cached
+    # a folder is never a file in input mode
+    os.makedirs(os.path.join(indir, "sub"))
+    try:
+        loader.load("sub", clip_index=1, folder="input")
+    except FileNotFoundError:
+        pass
+    else:
+        raise AssertionError("input mode loaded a folder")
+    try:
+        loader.load("calliope_p7_c3.safetensors", clip_index=1, folder="temp")
+    except ValueError as e:
+        assert "folder must be one of" in str(e), str(e)
+    else:
+        raise AssertionError("unknown folder accepted")
+    # the default stays output/: the uploaded name is not found there
+    try:
+        loader.load("calliope_p7_c3.safetensors", clip_index=1)
+    except FileNotFoundError:
+        pass
+    else:
+        raise AssertionError("default folder read from input/")
+    # the new widget is optional and last, so saved graphs keep positions
+    it = nodes.MiniMaxH3MotionContextLoadLatent.INPUT_TYPES()
+    assert list(it["required"]) == ["latent_path", "clip_index"]
+    assert list(it["optional"]) == ["stock_format", "folder"]
+    assert it["optional"]["folder"][0] == ["output", "input"]
+    assert it["optional"]["folder"][1]["default"] == "output"
+    print("input folder: uploaded file loads, index 0 loads nothing, "
+          "escapes and outside paths refused")
 
     print("smoke test passed")
 
